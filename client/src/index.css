@@ -1,62 +1,70 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Kiona";
+  src: url("/fonts/Kiona-Regular.ttf") format("truetype");
+  font-weight: 400 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --color-secondary-container: #fed977;
-  --color-tertiary-container: #003530;
-  --color-secondary-fixed-dim: #e6c364;
-  --color-secondary-fixed: #ffe08f;
-  --color-background: #f8f9fc;
+  --color-secondary-container: #2A2210;
+  --color-tertiary-container: #2A2210;
+  --color-secondary-fixed-dim: #FFB800;
+  --color-secondary-fixed: #F0A500;
+  --color-background: #111008;
   --color-on-error-container: #93000a;
-  --color-tertiary: #001e1b;
-  --color-on-secondary-container: #785d00;
-  --color-surface-tint: #4c5c92;
-  --color-outline: #757680;
-  --color-on-tertiary-container: #31a69a;
-  --color-on-tertiary-fixed: #00201d;
-  --color-inverse-surface: #2e3133;
-  --color-secondary: #755b00;
-  --color-primary-fixed: #dce1ff;
-  --color-on-tertiary: #ffffff;
-  --color-inverse-primary: #b5c4ff;
-  --color-surface-container-low: #f2f3f6;
-  --color-tertiary-fixed-dim: #6bd8cb;
-  --color-on-tertiary-fixed-variant: #005049;
-  --color-surface-container: #edeef1;
-  --color-on-secondary: #ffffff;
-  --color-inverse-on-surface: #f0f1f4;
-  --color-primary-fixed-dim: #b5c4ff;
-  --color-surface-bright: #f8f9fc;
-  --color-on-primary-fixed-variant: #344479;
-  --color-on-secondary-fixed-variant: #584400;
+  --color-tertiary: #2A2210;
+  --color-on-secondary-container: #F0A500;
+  --color-surface-tint: #F0A500;
+  --color-outline: #A89880;
+  --color-on-tertiary-container: #FFD166;
+  --color-on-tertiary-fixed: #FFD166;
+  --color-inverse-surface: #1C1A10;
+  --color-secondary: #E07B39;
+  --color-primary-fixed: #F0A500;
+  --color-on-tertiary: #FFFFFF;
+  --color-inverse-primary: #FFB800;
+  --color-surface-container-low: #1C1A10;
+  --color-tertiary-fixed-dim: #1C1A10;
+  --color-on-tertiary-fixed-variant: #F0A500;
+  --color-surface-container: #1C1A10;
+  --color-on-secondary: #FFFFFF;
+  --color-inverse-on-surface: #FFFFFF;
+  --color-primary-fixed-dim: #FFB800;
+  --color-surface-bright: #1C1A10;
+  --color-on-primary-fixed-variant: #1C1A10;
+  --color-on-secondary-fixed-variant: #1C1A10;
   --color-on-error: #ffffff;
-  --color-on-primary-fixed: #02174b;
-  --color-surface-container-highest: #e1e2e5;
-  --color-surface-container-high: #e7e8eb;
-  --color-on-primary: #ffffff;
+  --color-on-primary-fixed: #FFFFFF;
+  --color-surface-container-highest: #1C1A10;
+  --color-surface-container-high: #1C1A10;
+  --color-on-primary: #FFFFFF;
   --color-error: #ba1a1a;
-  --color-primary-container: #1a2b5f;
-  --color-primary: #00154a;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface: #f8f9fc;
+  --color-primary-container: #1C1A10;
+  --color-primary: #F0A500;
+  --color-surface-container-lowest: #1C1A10;
+  --color-surface: #1C1A10;
   --color-error-container: #ffdad6;
-  --color-surface-dim: #d9dadd;
-  --color-surface-variant: #e1e2e5;
-  --color-on-secondary-fixed: #241a00;
-  --color-on-surface-variant: #45464f;
-  --color-on-primary-container: #8494ce;
-  --color-on-surface: #191c1e;
-  --color-on-background: #191c1e;
-  --color-tertiary-fixed: #89f5e7;
-  --color-outline-variant: #c5c6d1;
+  --color-surface-dim: #1C1A10;
+  --color-surface-variant: #1C1A10;
+  --color-on-secondary-fixed: #FFFFFF;
+  --color-on-surface-variant: #A89880;
+  --color-on-primary-container: #FFD166;
+  --color-on-surface: #FFFFFF;
+  --color-on-background: #FFFFFF;
+  --color-tertiary-fixed: #2A2210;
+  --color-outline-variant: #2A2210;
 
   --radius-DEFAULT: 0.125rem;
   --radius-lg: 0.25rem;
   --radius-xl: 0.5rem;
   --radius-full: 0.75rem;
 
-  --font-headline: "Azonix", "Playfair Display", serif;
-  --font-body: "Azonix", "Inter", sans-serif;
-  --font-label: "Azonix", "Inter", sans-serif;
+  --font-headline: "Kiona", "Inter", sans-serif;
+  --font-body: "Kiona", "Inter", sans-serif;
+  --font-label: "Kiona", "Inter", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }
 
@@ -64,6 +72,24 @@ body {
   background-color: var(--color-background);
   color: var(--color-on-background);
   font-family: var(--font-body);
+  font-weight: 400;
+}
+
+/* Enforce only font-normal and font-medium weights */
+* {
+  font-weight: 400 !important;
+}
+
+.font-medium,
+.font-500,
+.medium {
+  font-weight: 500 !important;
+}
+
+/* Remove all other font weights */
+.font-thin, .font-light, .font-extralight, .font-100, .font-200, .font-300,
+.font-semibold, .font-bold, .font-extrabold, .font-black, .font-600, .font-700, .font-800, .font-900 {
+  font-weight: 400 !important;
 }
 
 h1, h2, h3, h4, h5, h6, .font-headline {
@@ -80,29 +106,29 @@ h1, h2, h3, h4, h5, h6, .font-headline {
 }
 
 @utility ambient-shadow {
-  box-shadow: 0 12px 40px rgba(25, 28, 30, 0.06);
+  box-shadow: 0 12px 40px rgba(240, 165, 0, 0.1);
 }
 
 @utility bg-navy-gradient {
-  background: linear-gradient(135deg, #00154a 0%, #1a2b5f 100%);
+  background: linear-gradient(135deg, #F0A500 0%, #FFD166 100%);
 }
 
 @utility gradient-primary {
-  background: linear-gradient(135deg, #00154a 0%, #1a2b5f 100%);
+  background: linear-gradient(135deg, #F0A500 0%, #FFD166 100%);
 }
 
 @utility btn-primary-gradient {
-  background: linear-gradient(135deg, #00154a 0%, #1a2b5f 100%);
+  background: linear-gradient(135deg, #F0A500 0%, #FFD166 100%);
 }
 
 @utility ghost-border {
-  border: 1px solid rgba(197, 198, 209, 0.15);
+  border: 1px solid rgba(240, 165, 0, 0.2);
 }
 
 @utility form-input-legal {
   &:focus {
     outline: none;
-    border-bottom: 2px solid #e6c364;
+    border-bottom: 2px solid #F0A500;
     box-shadow: none;
   }
 }
