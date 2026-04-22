@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  LAWYER
+  ADMIN
+}
+
+enum VerificationStatus {
+  PENDING
+  DOCUMENTS_REVIEWED
+  INTERVIEW_SCHEDULED
+  INTERVIEW_DONE
+  APPROVED
+  REJECTED
+  RE_VERIFICATION_REQUIRED
+}
+
+enum CourtLevel {
+  SUPREME
+  HIGH
+  DISTRICT
+  SUBORDINATE
+  FAMILY
+  CONSUMER
+  LABOUR
+  REVENUE
+  TRIBUNAL
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String?  @unique
+  phone             String?  @unique
+  password_hash     String
+  role              Role     @default(CLIENT)
+  full_name         String
+  profile_photo_url String?
+  is_active         Boolean  @default(true)
+  is_email_verified Boolean  @default(false)
+  is_phone_verified Boolean  @default(false)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  lawyer_profile    LawyerProfile?
+  client_profile    ClientProfile?
+
+  // Relations
+  appointmentsAsClient Appointment[] @relation("ClientAppointments")
+  casesAsClient        Case[]        @relation("ClientCases")
+  messagesSent         Message[]     @relation("SenderMessages")
+  reviewsGiven         Review[]      @relation("ClientReviews")
+  savedLawyers         SavedLawyer[] @relation("ClientSavedLawyers")
+  notifications        Notification[]
+}
+
+model LawyerProfile {
+  id                            String   @id @default(uuid())
+  user_id                       String   @unique
+  vain_id                       String?  @unique
+  bar_council_state             String?
+  bar_council_enrollment_number String?  @unique
+  year_of_enrollment            Int?
+  specializations               String[]
+  court_levels                  CourtLevel[]
+  experience_years              Int?
+  languages                     String[]
+  consultation_fee_online       Decimal?
+  consultation_fee_offline      Decimal?
+  bio                           String?
+  chamber_address               Json?
+  verification_status           VerificationStatus @default(PENDING)
+  rejection_reason              String?
+  avg_rating                    Decimal? @default(0.0)
+  total_reviews                 Int      @default(0)
+  is_available                  Boolean  @default(true)
+  created_at                    DateTime @default(now())
+  updated_at                    DateTime @updatedAt
+
+  // Relations
+  user                 User                     @relation(fields: [user_id], references: [id])
+  courtAffiliations    LawyerCourtAffiliation[]
+  documents            LawyerDocument[]
+  interviews           VerificationInterview[]
+  appointments         Appointment[]            @relation("LawyerAppointments")
+  cases                Case[]                   @relation("LawyerCases")
+  reviewsReceived      Review[]                 @relation("LawyerReviews")
+  savedByClients       SavedLawyer[]            @relation("LawyerSavedBy")
+  availabilities       LawyerAvailability[]
+  slotBlocks           LawyerSlotBlock[]
+}
+
+model Court {
+  id                 String   @id @default(uuid())
+  court_system_id    String   @unique
+  name               String
+  court_type         String
+  level              CourtLevel
+  state              String
+  district           String?
+  address            String?
+  latitude           Decimal?
+  longitude          Decimal?
+  working_hours      Json?
+  contact_phone      String?
+  contact_email      String?
+  website            String?
+  established_year   Int?
+  cases_handled      String[]
+  chief_justice_name String?
+  photos             String[]
+  is_verified        Boolean  @default(false)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  affiliations       LawyerCourtAffiliation[]
+  cases              Case[]
+}
+
+model LawyerCourtAffiliation {
+  id                  String   @id @default(uuid())
+  lawyer_id           String
+  court_id            String
+  practice_since_year Int?
+  is_primary          Boolean  @default(false)
+
+  lawyer              LawyerProfile @relation(fields: [lawyer_id], references: [id])
+  court               Court         @relation(fields: [court_id], references: [id])
+
+  @@unique([lawyer_id, court_id])
+}
+
+model LawyerDocument {
+  id            String   @id @default(uuid())
+  lawyer_id     String
+  document_type String
+  file_url      String
+  file_name     String
+  uploaded_at   DateTime @default(now())
+  verified      Boolean  @default(false)
+  verified_by   String?  // admin user id
+
+  lawyer        LawyerProfile @relation(fields: [lawyer_id], references: [id])
+}
+
+model VerificationInterview {
+  id                     String   @id @default(uuid())
+  lawyer_id              String
+  scheduled_by           String   // admin user id
+  interview_type         String
+  scheduled_at           DateTime
+  meeting_link           String?
+  physical_address       String?
+  status                 String   @default("SCHEDULED")
+  face_match_confirmed   Boolean  @default(false)
+  documents_verified     Boolean  @default(false)
+  professional_qa_passed Boolean  @default(false)
+  admin_notes            String?
+  outcome                String?
+  conducted_at           DateTime?
+  conducted_by           String?  // admin user id
+
+  lawyer                 LawyerProfile @relation(fields: [lawyer_id], references: [id])
+}
+
+model ClientProfile {
+  id                 String   @id @default(uuid())
+  user_id            String   @unique
+  state              String?
+  city               String?
+  pincode            String?
+  preferred_language String?
+
+  user               User     @relation(fields: [user_id], references: [id])
+}
+
+model Appointment {
+  id               String   @id @default(uuid())
+  client_id        String
+  lawyer_id        String
+  appointment_type String   // ONLINE, OFFLINE
+  scheduled_at     DateTime
+  duration_minutes Int      @default(60)
+  status           String   @default("PENDING")
+  meeting_link     String?
+  meeting_room_id  String?
+  notes            String?
+  reminder_24h_sent Boolean @default(false)
+  reminder_1h_sent  Boolean @default(false)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  client           User          @relation("ClientAppointments", fields: [client_id], references: [id])
+  lawyer           LawyerProfile @relation("LawyerAppointments", fields: [lawyer_id], references: [id])
+  payment          Payment?
+  review           Review?
+}
+
+model Payment {
+  id                   String   @id @default(uuid())
+  appointment_id       String   @unique
+  amount               Decimal
+  platform_fee         Decimal?
+  lawyer_amount        Decimal?
+  currency             String   @default("INR")
+  payment_method       String?
+  razorpay_order_id    String?
+  razorpay_payment_id  String?
+  razorpay_signature   String?
+  status               String   @default("PENDING") // PENDING, PAID, FAILED, REFUNDED
+  receipt_url          String?
+  paid_at              DateTime?
+  created_at           DateTime @default(now())
+
+  appointment          Appointment @relation(fields: [appointment_id], references: [id])
+  refunds              Refund[]
+}
+
+model Refund {
+  id                 String   @id @default(uuid())
+  payment_id         String
+  amount             Decimal
+  reason             String?
+  razorpay_refund_id String?
+  status             String   @default("INITIATED")
+  created_at         DateTime @default(now())
+
+  payment            Payment @relation(fields: [payment_id], references: [id])
+}
+
+model Case {
+  id                String   @id @default(uuid())
+  client_id         String
+  lawyer_id         String
+  court_id          String?
+  title             String
+  description       String?
+  case_type         String?
+  status            String   @default("ACTIVE") // ACTIVE, ON_HOLD, CLOSED, WITHDRAWN
+  next_hearing_date DateTime?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  client            User          @relation("ClientCases", fields: [client_id], references: [id])
+  lawyer            LawyerProfile @relation("LawyerCases", fields: [lawyer_id], references: [id])
+  court             Court?        @relation(fields: [court_id], references: [id])
+  updates           CaseUpdate[]
+  documents         CaseDocument[]
+}
+
+model CaseUpdate {
+  id          String   @id @default(uuid())
+  case_id     String
+  added_by    String   // user id
+  update_text String
+  created_at  DateTime @default(now())
+
+  case        Case     @relation(fields: [case_id], references: [id])
+}
+
+model CaseDocument {
+  id          String   @id @default(uuid())
+  case_id     String
+  uploaded_by String   // user id
+  file_name   String
+  file_url    String
+  file_type   String?
+  uploaded_at DateTime @default(now())
+
+  case        Case     @relation(fields: [case_id], references: [id])
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  conversation_id String
+  sender_id       String
+  content         String
+  file_url        String?
+  is_read         Boolean  @default(false)
+  created_at      DateTime @default(now())
+
+  conversation    Conversation @relation(fields: [conversation_id], references: [id])
+  sender          User         @relation("SenderMessages", fields: [sender_id], references: [id])
+}
+
+model Conversation {
+  id             String   @id @default(uuid())
+  client_id      String
+  lawyer_id      String
+  last_message_at DateTime @default(now())
+  created_at     DateTime @default(now())
+
+  messages       Message[]
+}
+
+model Review {
+  id                  String   @id @default(uuid())
+  client_id           String
+  lawyer_id           String
+  appointment_id      String   @unique
+  rating              Int
+  review_text         String?
+  is_verified_booking Boolean  @default(true)
+  is_visible          Boolean  @default(true)
+  created_at          DateTime @default(now())
+
+  client              User          @relation("ClientReviews", fields: [client_id], references: [id])
+  lawyer              LawyerProfile @relation("LawyerReviews", fields: [lawyer_id], references: [id])
+  appointment         Appointment   @relation(fields: [appointment_id], references: [id])
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  user_id    String
+  type       String
+  title      String
+  body       String?
+  is_read    Boolean  @default(false)
+  metadata   Json?
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id])
+}
+
+model SavedLawyer {
+  id         String   @id @default(uuid())
+  client_id  String
+  lawyer_id  String
+  created_at DateTime @default(now())
+
+  client     User          @relation("ClientSavedLawyers", fields: [client_id], references: [id])
+  lawyer     LawyerProfile @relation("LawyerSavedBy", fields: [lawyer_id], references: [id])
+
+  @@unique([client_id, lawyer_id])
+}
+
+model OtpVerification {
+  id              String   @id @default(uuid())
+  phone_or_email  String
+  otp_hash        String
+  purpose         String
+  expires_at      DateTime
+  is_used         Boolean  @default(false)
+}
+
+model LawyerAvailability {
+  id           String   @id @default(uuid())
+  lawyer_id    String
+  day_of_week  Int      // 0=Sun - 6=Sat
+  start_time   String   // "10:00"
+  end_time     String   // "17:00"
+  is_available Boolean  @default(true)
+
+  lawyer       LawyerProfile @relation(fields: [lawyer_id], references: [id])
+}
+
+model LawyerSlotBlock {
+  id           String   @id @default(uuid())
+  lawyer_id    String
+  blocked_from DateTime
+  blocked_to   DateTime
+  reason       String?
+
+  lawyer       LawyerProfile @relation(fields: [lawyer_id], references: [id])
+}
